@@ -1,0 +1,14 @@
+langgraph
+gradio_client
+pillow
+numpy
+rembg
+trimesh[easy]
+fast-simplification
+scipy
+python-dotenv
+langchain_google_genai
+fastapi 
+python-multipart
+uvicorn
+onnxruntime
