@@ -25,7 +25,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 HF_TOKEN = os.getenv("HF_TOKEN")
-HF_SPACE_ID = "tencent/Hunyuan3D-2"
+HF_SPACE_ID = os.getenv("HF_SPACE_ID", "tencent/Hunyuan3D-2")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=GOOGLE_API_KEY)
