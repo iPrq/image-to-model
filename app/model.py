@@ -19,8 +19,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-UPLOAD_DIR = Path("workspace/uploads")
-OUTPUT_DIR = Path("workspace/outputs")
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_DIR = BASE_DIR / "workspace" / "uploads"
+OUTPUT_DIR = BASE_DIR / "workspace" / "outputs"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -28,7 +29,7 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 HF_SPACE_ID = os.getenv("HF_SPACE_ID", "tencent/Hunyuan3D-2")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=GOOGLE_API_KEY)
+llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", api_key=GOOGLE_API_KEY)
 
 
 class MeshState(TypedDict):
@@ -45,36 +46,45 @@ class MeshState(TypedDict):
     max_retries: int
 
 def generate_transient_caption(image_path: str, user_prompt: Optional[str] = None) -> str:
-    """Invokes VLM to generate or enhance a 3D reconstruction caption."""
-    with open(image_path, "rb") as f:
-        b64_img = base64.b64encode(f.read()).decode("utf-8")
+    """Invokes VLM to generate or enhance a 3D reconstruction caption with fail-safe fallback."""
+    fallback_caption = user_prompt.strip() if (user_prompt and user_prompt.strip()) else "detailed 3D asset with clean geometry and watertight surface"
 
-    if user_prompt and user_prompt.strip():
-        prompt_text = (
-            f"The user provided this description of the object: '{user_prompt.strip()}'. "
-            "Analyze the image alongside this description and generate an enhanced, concise 3D reconstruction caption "
-            "(under 40 words). Emphasize 3D volume, unseen back-face geometry, structure, and surface finish. "
-            "Return only the caption with no filler or prefixes."
-        )
-    else:
-        prompt_text = (
-            "Provide a concise 3D reconstruction caption (under 30 words) describing volume, "
-            "back face, and finish based on the image. Return only the caption with no filler."
-        )
+    try:
+        with open(image_path, "rb") as f:
+            b64_img = base64.b64encode(f.read()).decode("utf-8")
 
-    response = llm.invoke([
-        HumanMessage(content=[
-            {
-                "type": "text", 
-                "text": prompt_text
-            },
-            {
-                "type": "image_url", 
-                "image_url": {"url": f"data:image/png;base64,{b64_img}"}
-            }
+        if user_prompt and user_prompt.strip():
+            prompt_text = (
+                f"The user provided this description of the object: '{user_prompt.strip()}'. "
+                "Analyze the image alongside this description and generate an enhanced, concise 3D reconstruction caption "
+                "(under 40 words). Emphasize 3D volume, unseen back-face geometry, structure, and surface finish. "
+                "Return only the caption with no filler or prefixes."
+            )
+        else:
+            prompt_text = (
+                "Provide a concise 3D reconstruction caption (under 30 words) describing volume, "
+                "back face, and finish based on the image. Return only the caption with no filler."
+            )
+
+        response = llm.invoke([
+            HumanMessage(content=[
+                {
+                    "type": "text", 
+                    "text": prompt_text
+                },
+                {
+                    "type": "image_url", 
+                    "image_url": {"url": f"data:image/png;base64,{b64_img}"}
+                }
+            ])
         ])
-    ])
-    return str(response.content).strip().strip('"').strip("'")
+        caption = str(response.content).strip().strip('"').strip("'")
+        if caption:
+            return caption
+    except Exception as e:
+        print(f"[WARN] VLM caption generation encountered an issue ({e}). Using fallback: '{fallback_caption}'")
+
+    return fallback_caption
 
 
 def preprocess_node(state: MeshState) -> dict:
