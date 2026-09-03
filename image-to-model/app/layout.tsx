@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "VoxelMorph — AI Image to 3D Model Studio",
-  description:
-    "Transform 2D images into interactive 3D GLB models with Gemini 1.5 Flash VLM prompt enhancement and Hunyuan3D-2.",
+  title: "Core3D — 2D Image to 3D Model Studio",
+  description: "High-precision 3D mesh reconstruction from single reference images.",
 };
 
 export default function RootLayout({
@@ -24,17 +19,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
-    >
+    <html lang="en" className={`${inter.variable} h-full antialiased dark`}>
       <head>
         <script
           type="module"
           src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#07080d] text-zinc-100 selection:bg-purple-500/30 selection:text-purple-200">
+      <body className="min-h-full flex flex-col bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
         {children}
       </body>
     </html>
