@@ -131,7 +131,7 @@ export default function CreatePage() {
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans">
       <Header />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-12 flex flex-col justify-center space-y-8">
+      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-12 pt-24 sm:pt-28 flex flex-col justify-center space-y-8">
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
             Create 3D Asset

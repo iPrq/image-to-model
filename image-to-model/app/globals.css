@@ -5,6 +5,11 @@
   --foreground: #f4f4f5;
 }
 
+.font-sharp {
+  font-family: 'Space Grotesk', var(--font-inter), sans-serif;
+  letter-spacing: -0.035em;
+}
+
 body {
   background-color: #000000;
   color: #f4f4f5;

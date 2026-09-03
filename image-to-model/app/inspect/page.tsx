@@ -14,19 +14,20 @@ export default function InspectPage() {
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
 
   useEffect(() => {
-    // Load model from session storage
+    // Load model from session storage or fallback to /hero-model.glb
     const storedUrl = sessionStorage.getItem("active_model_url");
     const storedSize = sessionStorage.getItem("active_model_size");
     const storedId = sessionStorage.getItem("active_model_id");
 
     if (storedUrl) {
       setModelUrl(storedUrl);
-    }
-    if (storedSize) {
-      setModelSize(parseInt(storedSize, 10));
-    }
-    if (storedId) {
-      setModelId(storedId);
+      setModelSize(storedSize ? parseInt(storedSize, 10) : 0);
+      setModelId(storedId || "ASSET");
+    } else {
+      // Default to the provided hero-model.glb
+      setModelUrl("/hero-model.glb");
+      setModelSize(3773916);
+      setModelId("HERO_SPEC");
     }
   }, []);
 
@@ -42,7 +43,7 @@ export default function InspectPage() {
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans">
       <Header />
 
-      <main className="flex-1 flex flex-col p-6 sm:p-10 max-w-5xl w-full mx-auto">
+      <main className="flex-1 flex flex-col p-6 sm:p-10 pt-20 sm:pt-24 max-w-5xl w-full mx-auto">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#27272a]">
           <h2 className="text-sm font-medium text-zinc-300">
             {modelUrl ? `Model Inspection [${modelId}]` : "Model Inspection"}
