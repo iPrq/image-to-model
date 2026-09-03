@@ -3,27 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
-
-const PRESETS = [
-  {
-    id: "chair",
-    title: "Minimal Chair",
-    prompt: "Solid oak lounge chair with clean geometry",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230f0f12"/><rect x="65" y="70" width="70" height="40" fill="none" stroke="%23fafafa" stroke-width="2"/><rect x="65" y="110" width="70" height="10" fill="%23fafafa"/><line x1="75" y1="120" x2="75" y2="160" stroke="%23fafafa" stroke-width="2"/><line x1="125" y1="120" x2="125" y2="160" stroke="%23fafafa" stroke-width="2"/></svg>`,
-  },
-  {
-    id: "vessel",
-    title: "Ceramic Vessel",
-    prompt: "Fluted porcelain cylindrical vessel with smooth interior",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230f0f12"/><ellipse cx="100" cy="70" rx="35" ry="12" fill="none" stroke="%23fafafa" stroke-width="2"/><path d="M65 70 v60 a35 12 0 0 0 70 0 v-60" fill="none" stroke="%23fafafa" stroke-width="2"/></svg>`,
-  },
-  {
-    id: "enclosure",
-    title: "Hardware Case",
-    prompt: "Matte titanium hardware enclosure with beveled edges",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230f0f12"/><polygon points="70,60 130,60 150,80 150,140 130,160 70,160 50,140 50,80" fill="none" stroke="%23fafafa" stroke-width="2"/><circle cx="100" cy="110" r="20" fill="none" stroke="%23fafafa" stroke-width="2"/></svg>`,
-  },
-];
+import { setPendingJob } from "../lib/jobStore";
 
 export default function CreatePage() {
   const router = useRouter();
@@ -63,68 +43,14 @@ export default function CreatePage() {
     }
   };
 
-  const handlePresetSelect = async (preset: (typeof PRESETS)[0]) => {
-    setErrorMessage(null);
-    setPrompt(preset.prompt);
-    try {
-      const res = await fetch(preset.svg);
-      const blob = await res.blob();
-      const file = new File([blob], `${preset.id}.svg`, { type: "image/svg+xml" });
-      setSelectedFile(file);
-      setPreviewUrl(preset.svg);
-    } catch {
-      // ignore
-    }
-  };
-
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!selectedFile) {
       setErrorMessage("Please upload or select an image.");
       return;
     }
-
-    setIsProcessing(true);
     setErrorMessage(null);
-
-    const formData = new FormData();
-    formData.append("image", selectedFile);
-    if (prompt.trim()) {
-      formData.append("prompt", prompt.trim());
-    }
-
-    try {
-      let res: Response;
-      try {
-        res = await fetch("/api/backend/generate", {
-          method: "POST",
-          body: formData,
-        });
-      } catch {
-        res = await fetch("http://localhost:8000/generate", {
-          method: "POST",
-          body: formData,
-        });
-      }
-
-      if (!res.ok) {
-        throw new Error("Generation request failed. Check server status.");
-      }
-
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Store model in session storage for Inspect page
-      sessionStorage.setItem("active_model_url", blobUrl);
-      sessionStorage.setItem("active_model_size", blob.size.toString());
-      sessionStorage.setItem("active_model_id", Math.random().toString(36).substring(2, 8).toUpperCase());
-
-      // Navigate to /inspect page
-      router.push("/inspect");
-    } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Generation failed.");
-    } finally {
-      setIsProcessing(false);
-    }
+    setPendingJob(selectedFile, prompt.trim(), previewUrl || "");
+    router.push("/generating");
   };
 
   return (
@@ -181,19 +107,6 @@ export default function CreatePage() {
           )}
         </div>
 
-        {/* Presets */}
-        <div className="grid grid-cols-3 gap-3">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              onClick={() => handlePresetSelect(preset)}
-              className="border border-[#27272a] hover:border-zinc-500 p-3 text-left text-xs text-zinc-300 hover:text-white transition-colors"
-            >
-              <div className="font-medium text-white">{preset.title}</div>
-            </button>
-          ))}
-        </div>
-
         {/* Prompt Input */}
         <div>
           <input
@@ -215,18 +128,14 @@ export default function CreatePage() {
         {/* Submit */}
         <button
           onClick={handleGenerate}
-          disabled={isProcessing || !selectedFile}
+          disabled={!selectedFile}
           className={`w-full py-3.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-            isProcessing || !selectedFile
+            !selectedFile
               ? "bg-zinc-900 text-zinc-600 border border-[#27272a] cursor-not-allowed"
-              : "bg-white text-black hover:bg-zinc-200"
+              : "bg-white text-black hover:bg-zinc-200 cursor-pointer active:scale-[0.99]"
           }`}
         >
-          {isProcessing ? (
-            <span>Generating model ({elapsed}s)...</span>
-          ) : (
-            <span>Generate 3D Model →</span>
-          )}
+          <span>Generate 3D Model →</span>
         </button>
       </main>
     </div>
