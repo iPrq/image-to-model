@@ -38,3 +38,17 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
+
+/* Precision laser scan beam keyframes */
+@keyframes scanBeam {
+  0% {
+    top: 4%;
+  }
+  100% {
+    top: 96%;
+  }
+}
+
+.animate-scan-beam {
+  animation: scanBeam 3s ease-in-out infinite alternate;
+}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { getPendingJob, clearPendingJob } from "../lib/jobStore";
+import { storeModelBlob } from "../lib/modelStorage";
 
 const PIPELINE_STEPS = [
   { id: 1, label: "Subject Isolation & Alpha Normalization", threshold: 0 },
@@ -61,43 +62,59 @@ export default function GeneratingPage() {
       formData.append("prompt", userPrompt.trim());
     }
 
-    try {
-      let res: Response;
-      try {
-        res = await fetch("/api/backend/generate", {
-          method: "POST",
-          body: formData,
-        });
-        if (!res.ok && res.status === 404) {
-          res = await fetch("http://127.0.0.1:8000/generate", {
-            method: "POST",
-            body: formData,
-          });
-        }
-      } catch {
-        res = await fetch("http://127.0.0.1:8000/generate", {
-          method: "POST",
-          body: formData,
-        });
-      }
+    // Array of candidate endpoints for maximum resilience
+    const endpoints = [
+      "/api/backend/generate",
+      "http://127.0.0.1:8000/generate",
+      "http://localhost:8000/generate",
+    ];
 
-      if (!res.ok) {
-        let detailMsg = `Generation failed (${res.status})`;
-        try {
-          const errData = await res.json();
-          if (errData.detail) detailMsg = errData.detail;
-        } catch {
-          const text = await res.text();
-          if (text) detailMsg = text.slice(0, 150);
+    let res: Response | null = null;
+    let failureReason = "";
+
+    for (const url of endpoints) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          res = response;
+          break;
+        } else {
+          try {
+            const errData = await response.json();
+            if (errData.detail) failureReason = errData.detail;
+          } catch {
+            const text = await response.text();
+            if (text) failureReason = text.slice(0, 150);
+          }
+          if (!failureReason) failureReason = `HTTP ${response.status}`;
         }
-        throw new Error(detailMsg);
+      } catch (err) {
+        failureReason = err instanceof Error ? err.message : "Connection failed";
+      }
+    }
+
+    try {
+      if (!res || !res.ok) {
+        throw new Error(
+          failureReason
+            ? `Generation failed: ${failureReason}`
+            : "Could not connect to backend. Ensure FastAPI server is running on port 8000."
+        );
       }
 
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
-      const generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const serverJobId = res.headers.get("X-Job-ID");
+      const generatedId = serverJobId || Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      // Store model in session storage for Inspect page
+      // Store model in IndexedDB for permanent reload resilience
+      await storeModelBlob("latest_model", blob);
+
+      // Store model in session storage for instant viewer access
       sessionStorage.setItem("active_model_url", blobUrl);
       sessionStorage.setItem("active_model_size", blob.size.toString());
       sessionStorage.setItem("active_model_id", generatedId);
@@ -106,7 +123,6 @@ export default function GeneratingPage() {
       setIsDone(true);
       setStatusText("Reconstruction complete. Opening viewer...");
 
-      // Short pause so user sees final completed state before redirecting
       setTimeout(() => {
         router.push("/inspect");
       }, 700);
@@ -274,18 +290,6 @@ export default function GeneratingPage() {
             )}
           </div>
         </div>
-
-        {/* Global Keyframes for scanner beam */}
-        <style jsx global>{`
-          @keyframes scanBeam {
-            0% {
-              top: 4%;
-            }
-            100% {
-              top: 96%;
-            }
-          }
-        `}</style>
       </main>
     </div>
   );

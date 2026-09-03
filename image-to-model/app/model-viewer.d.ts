@@ -23,4 +23,29 @@ declare global {
       >;
     }
   }
+
+  namespace React {
+    namespace JSX {
+      interface IntrinsicElements {
+        "model-viewer": React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement> & {
+            src?: string;
+            alt?: string;
+            "auto-rotate"?: boolean | string;
+            "camera-controls"?: boolean | string;
+            "shadow-intensity"?: string | number;
+            exposure?: string | number;
+            "interaction-prompt"?: string;
+            "environment-image"?: string;
+            poster?: string;
+            loading?: string;
+            reveal?: string;
+            ar?: boolean | string;
+            style?: React.CSSProperties;
+          },
+          HTMLElement
+        >;
+      }
+    }
+  }
 }

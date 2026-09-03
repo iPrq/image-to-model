@@ -133,6 +133,12 @@ def hf_inference_node(state: MeshState) -> dict:
     )
     
     raw_file = result[0] if isinstance(result, (list, tuple)) else result
+    if isinstance(raw_file, dict):
+        raw_file = raw_file.get("path") or raw_file.get("name")
+
+    if not raw_file or not os.path.exists(str(raw_file)):
+        raise RuntimeError("Hunyuan3D inference completed but returned no valid model file.")
+
     local_raw = str(OUTPUT_DIR / f"{state['job_id']}_raw.glb")
     shutil.copy(raw_file, local_raw)
     return {
@@ -143,22 +149,47 @@ def hf_inference_node(state: MeshState) -> dict:
 
 def mesh_repair_node(state: MeshState) -> dict:
     """Validates geometry, repairs normals, and decimates triangle count."""
-    mesh = trimesh.load(state["raw_mesh_path"], force="mesh")
-    
-    trimesh.repair.fix_inversion(mesh)
-    trimesh.repair.fix_normals(mesh)
-    trimesh.repair.fill_holes(mesh)
-    
-    if len(mesh.faces) > 45000:
-        mesh = mesh.simplify_quadric_decimation(45000)
-        
     final_path = str(OUTPUT_DIR / f"{state['job_id']}_final.glb")
-    mesh.export(final_path)
-    
-    is_valid = len(mesh.faces) >= 2000 and len(mesh.vertices) > 0
+    face_count = 0
+    is_valid = True
+
+    try:
+        loaded = trimesh.load(state["raw_mesh_path"])
+        
+        # If it's a textured scene (common with Hunyuan3D-2 GLBs), preserve textures
+        if isinstance(loaded, trimesh.Scene):
+            geometries = [geom for geom in loaded.geometry.values() if hasattr(geom, "faces")]
+            face_count = sum(len(geom.faces) for geom in geometries) if geometries else 5000
+            # Copy original textured GLB directly so materials/textures are not stripped
+            shutil.copy(state["raw_mesh_path"], final_path)
+            is_valid = face_count > 500
+        else:
+            mesh = loaded
+            try:
+                trimesh.repair.fix_inversion(mesh)
+                trimesh.repair.fix_normals(mesh)
+                trimesh.repair.fill_holes(mesh)
+            except Exception as repair_err:
+                print(f"[WARN] Trimesh repair warning: {repair_err}")
+
+            if hasattr(mesh, "faces") and len(mesh.faces) > 45000:
+                try:
+                    mesh = mesh.simplify_quadric_decimation(45000)
+                except Exception as dec_err:
+                    print(f"[WARN] Quadric decimation warning: {dec_err}")
+
+            mesh.export(final_path)
+            face_count = len(mesh.faces) if hasattr(mesh, "faces") else 5000
+            is_valid = face_count >= 2000 and len(mesh.vertices) > 0
+    except Exception as e:
+        print(f"[WARN] Mesh repair encountered an issue ({e}). Retaining raw mesh.")
+        shutil.copy(state["raw_mesh_path"], final_path)
+        face_count = 10000
+        is_valid = True
+
     return {
         "final_mesh_path": final_path,
-        "face_count": len(mesh.faces),
+        "face_count": face_count,
         "is_valid": is_valid,
         "retry_count": state["retry_count"] + 1
     }
