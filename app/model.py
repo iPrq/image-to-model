@@ -20,16 +20,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_DIR = BASE_DIR / "workspace" / "uploads"
-OUTPUT_DIR = BASE_DIR / "workspace" / "outputs"
+UPLOAD_DIR = BASE_DIR / ".workspace" / "uploads"
+OUTPUT_DIR = BASE_DIR / ".workspace" / "outputs"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 HF_TOKEN = os.getenv("HF_TOKEN")
-HF_SPACE_ID = os.getenv("HF_SPACE_ID", "tencent/Hunyuan3D-2")
+if HF_TOKEN:
+    HF_TOKEN = HF_TOKEN.strip()
+HF_SPACE_ID = os.getenv("HF_SPACE_ID", "tencent/Hunyuan3D-2").strip()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if GOOGLE_API_KEY:
+    GOOGLE_API_KEY = GOOGLE_API_KEY.strip()
 
-llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", api_key=GOOGLE_API_KEY)
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
 
 
 class MeshState(TypedDict):
@@ -48,6 +52,9 @@ class MeshState(TypedDict):
 def generate_transient_caption(image_path: str, user_prompt: Optional[str] = None) -> str:
     """Invokes VLM to generate or enhance a 3D reconstruction caption with fail-safe fallback."""
     fallback_caption = user_prompt.strip() if (user_prompt and user_prompt.strip()) else "detailed 3D asset with clean geometry and watertight surface"
+
+    if not llm:
+        return fallback_caption
 
     try:
         with open(image_path, "rb") as f:
@@ -89,21 +96,30 @@ def generate_transient_caption(image_path: str, user_prompt: Optional[str] = Non
 
 def preprocess_node(state: MeshState) -> dict:
     """Removes background and pads subject into a 1024x1024 square canvas."""
-    raw = Image.open(state["input_image_path"]).convert("RGBA")
-    nobg = remove(raw)
-    
-    alpha = np.array(nobg.split()[-1])
-    bbox = Image.fromarray(alpha).getbbox()
-    if bbox:
-        nobg = nobg.crop(bbox)
-        
-    dim = int(max(nobg.size) * 1.15)
-    canvas = Image.new("RGBA", (dim, dim), (0, 0, 0, 0))
-    canvas.paste(nobg, ((dim - nobg.size[0]) // 2, (dim - nobg.size[1]) // 2))
-    padded = canvas.resize((1024, 1024), Image.Resampling.LANCZOS)
-    
     clean_path = str(UPLOAD_DIR / f"{state['job_id']}_clean.png")
-    padded.save(clean_path, format="PNG")
+    try:
+        raw = Image.open(state["input_image_path"]).convert("RGBA")
+        nobg = remove(raw)
+        
+        alpha = np.array(nobg.split()[-1])
+        bbox = Image.fromarray(alpha).getbbox()
+        if bbox:
+            nobg = nobg.crop(bbox)
+            
+        dim = int(max(nobg.size) * 1.15)
+        canvas = Image.new("RGBA", (dim, dim), (0, 0, 0, 0))
+        canvas.paste(nobg, ((dim - nobg.size[0]) // 2, (dim - nobg.size[1]) // 2))
+        padded = canvas.resize((1024, 1024), Image.Resampling.LANCZOS)
+        padded.save(clean_path, format="PNG")
+    except Exception as e:
+        print(f"[WARN] rembg processing issue ({e}), using padded original.")
+        raw = Image.open(state["input_image_path"]).convert("RGBA")
+        dim = int(max(raw.size) * 1.15)
+        canvas = Image.new("RGBA", (dim, dim), (0, 0, 0, 0))
+        canvas.paste(raw, ((dim - raw.size[0]) // 2, (dim - raw.size[1]) // 2))
+        padded = canvas.resize((1024, 1024), Image.Resampling.LANCZOS)
+        padded.save(clean_path, format="PNG")
+
     return {"preprocessed_path": clean_path}
 
 
@@ -121,23 +137,48 @@ def hf_inference_node(state: MeshState) -> dict:
 
     print(f"--- [Inference] Running with enhanced caption: '{caption}' ---")
 
-    result = client.predict(
-        caption=caption,
-        image=handle_file(state["preprocessed_path"]),
-        steps=30,
-        guidance_scale=5.5,
-        seed=100 + state["retry_count"],
-        octree_resolution="256",
-        check_box_rembg=False,
-        api_name="/generation_all"
-    )
+    try:
+        result = client.predict(
+            caption=caption,
+            image=handle_file(state["preprocessed_path"]),
+            mv_image_front=None,
+            mv_image_back=None,
+            mv_image_left=None,
+            mv_image_right=None,
+            steps=30,
+            guidance_scale=5.5,
+            seed=100 + state["retry_count"],
+            octree_resolution=256,
+            check_box_rembg=False,
+            num_chunks=8000,
+            randomize_seed=False,
+            api_name="/shape_generation"
+        )
+    except Exception as e:
+        print(f"[WARN] First inference attempt failed ({e}), retrying with string octree_resolution...")
+        result = client.predict(
+            caption=caption,
+            image=handle_file(state["preprocessed_path"]),
+            mv_image_front=None,
+            mv_image_back=None,
+            mv_image_left=None,
+            mv_image_right=None,
+            steps=30,
+            guidance_scale=5.5,
+            seed=100 + state["retry_count"],
+            octree_resolution="256",
+            check_box_rembg=False,
+            num_chunks=8000,
+            randomize_seed=False,
+            api_name="/shape_generation"
+        )
     
     raw_file = result[0] if isinstance(result, (list, tuple)) else result
     if isinstance(raw_file, dict):
-        raw_file = raw_file.get("path") or raw_file.get("name")
+        raw_file = raw_file.get("value") or raw_file.get("path") or raw_file.get("name")
 
     if not raw_file or not os.path.exists(str(raw_file)):
-        raise RuntimeError("Hunyuan3D inference completed but returned no valid model file.")
+        raise RuntimeError(f"Hunyuan3D inference completed but returned no valid model file. Result: {result}")
 
     local_raw = str(OUTPUT_DIR / f"{state['job_id']}_raw.glb")
     shutil.copy(raw_file, local_raw)

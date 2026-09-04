@@ -62,11 +62,11 @@ export default function GeneratingPage() {
       formData.append("prompt", userPrompt.trim());
     }
 
-    // Array of candidate endpoints for maximum resilience
+    // Connect directly to FastAPI to bypass Next.js proxy socket timeouts
     const endpoints = [
-      "/api/backend/generate",
       "http://127.0.0.1:8000/generate",
       "http://localhost:8000/generate",
+      "/api/backend/generate",
     ];
 
     let res: Response | null = null;

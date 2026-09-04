@@ -53,24 +53,32 @@ def generate_mesh(
     with open(input_path, "wb") as f:
         f.write(image.file.read())
 
-    # Run pipeline
-    state = pipeline.invoke({
-        "job_id": job_id,
-        "input_image_path": str(input_path),
-        "preprocessed_path": None,
-        "user_prompt": prompt,
-        "enhanced_prompt": None,
-        "raw_mesh_path": None,
-        "final_mesh_path": None,
-        "face_count": 0,
-        "is_valid": False,
-        "retry_count": 0,
-        "max_retries": 1,
-    })
+    # Run pipeline with explicit error reporting
+    try:
+        state = pipeline.invoke({
+            "job_id": job_id,
+            "input_image_path": str(input_path),
+            "preprocessed_path": None,
+            "user_prompt": prompt,
+            "enhanced_prompt": None,
+            "raw_mesh_path": None,
+            "final_mesh_path": None,
+            "face_count": 0,
+            "is_valid": False,
+            "retry_count": 0,
+            "max_retries": 1,
+        })
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"3D Pipeline execution error: {str(exc)}"
+        )
 
     final_path = state.get("final_mesh_path")
     if not final_path or not os.path.exists(final_path):
-        raise HTTPException(status_code=500, detail="Failed to generate 3D model.")
+        raise HTTPException(status_code=500, detail="Failed to generate 3D model: output GLB missing.")
 
     # Return the generated .glb file directly
     return FileResponse(
