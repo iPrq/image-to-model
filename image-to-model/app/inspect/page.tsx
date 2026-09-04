@@ -224,9 +224,9 @@ export default function InspectPage() {
         </div>
 
         {/* Workstation Grid: 3D Viewport + Shading & Opacity Control Sidebar */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-w-0">
           {/* Main 3D Turntable Viewport (3 Cols on Large Screen) */}
-          <div className="lg:col-span-3 border border-[#27272a] bg-[#050507] min-h-[540px] flex items-center justify-center relative overflow-hidden">
+          <div className="lg:col-span-3 border border-[#27272a] bg-[#050507] min-h-[540px] flex items-center justify-center relative overflow-hidden min-w-0">
             {!isMounted ? (
               <div className="text-xs text-zinc-500 font-mono animate-pulse">
                 INITIALIZING 3D ENGINE...
@@ -271,14 +271,14 @@ export default function InspectPage() {
             )}
 
             {/* Subtle Overlay Overlay Tags */}
-            <div className="absolute top-3 left-3 text-[10px] font-mono text-zinc-600 bg-black/60 border border-zinc-800/80 px-2 py-0.5 pointer-events-none">
+            <div className="absolute top-3 left-3 text-[10px] font-mono text-zinc-600 bg-black/60 border border-zinc-800/80 px-2 py-0.5 pointer-events-none truncate max-w-[280px]">
               OPACITY: {Math.round(opacity * 100)}% // SHADING: {selectedColor.name.toUpperCase()}
             </div>
           </div>
 
           {/* Shading & Material Control Panel (1 Col) */}
-          <div className="border border-[#27272a] bg-[#09090b] p-5 flex flex-col justify-between space-y-6">
-            <div className="space-y-6">
+          <div className="border border-[#27272a] bg-[#09090b] p-5 flex flex-col justify-between space-y-6 min-w-0 overflow-hidden">
+            <div className="space-y-6 min-w-0">
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#27272a]">
                 <span className="text-xs font-semibold text-zinc-200 tracking-wider uppercase font-mono">
@@ -293,7 +293,7 @@ export default function InspectPage() {
               </div>
 
               {/* 1. Opacity Slider & Quick Presets */}
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 min-w-0">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-300 font-medium">Opacity / Transparency</span>
                   <span className="text-zinc-400 font-mono text-[11px] font-semibold">
@@ -347,7 +347,7 @@ export default function InspectPage() {
               </div>
 
               {/* 2. Color Tint Presets */}
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 min-w-0">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-300 font-medium">Color Tone</span>
                   <span className="text-zinc-400 font-mono text-[11px]">{selectedColor.name}</span>
@@ -371,7 +371,7 @@ export default function InspectPage() {
                           className="w-5 h-5 rounded-full border border-black/40 shadow-sm"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <span className="text-[9px] font-mono text-zinc-400 group-hover:text-zinc-200">
+                        <span className="text-[9px] font-mono text-zinc-400 group-hover:text-zinc-200 truncate max-w-full">
                           {color.name.split(" ")[0]}
                         </span>
                       </button>
@@ -381,7 +381,7 @@ export default function InspectPage() {
               </div>
 
               {/* 3. Lighting Exposure */}
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-300 font-medium">Lighting Exposure</span>
                   <span className="text-zinc-400 font-mono text-[11px]">{exposure.toFixed(2)}x</span>
@@ -398,7 +398,7 @@ export default function InspectPage() {
               </div>
 
               {/* 4. Surface Roughness */}
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-300 font-medium">Surface Roughness</span>
                   <span className="text-zinc-400 font-mono text-[11px]">
@@ -418,12 +418,12 @@ export default function InspectPage() {
 
               {/* 5. Google Generated / Enhanced Prompt */}
               {modelPrompt && (
-                <div className="space-y-2 pt-3 border-t border-[#27272a]">
+                <div className="space-y-2 pt-3 border-t border-[#27272a] min-w-0">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-zinc-300 font-medium">Reconstruction Prompt</span>
                     <span className="text-[10px] font-mono text-zinc-500">Google Gemini</span>
                   </div>
-                  <div className="text-xs text-zinc-300 bg-black/60 border border-zinc-800 p-3 leading-relaxed font-mono select-text italic">
+                  <div className="text-xs text-zinc-300 bg-black/60 border border-zinc-800 p-3 leading-relaxed font-mono select-text italic break-words [overflow-wrap:anywhere] max-h-48 overflow-y-auto">
                     &ldquo;{modelPrompt}&rdquo;
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export default function InspectPage() {
             </div>
 
             {/* Bottom Details */}
-            <div className="pt-4 border-t border-[#27272a] space-y-1.5 text-[10px] font-mono text-zinc-500">
+            <div className="pt-4 border-t border-[#27272a] space-y-1.5 text-[10px] font-mono text-zinc-500 min-w-0">
               <div className="flex justify-between">
                 <span>FORMAT</span>
                 <span className="text-zinc-400">glTF 2.0 Binary (.GLB)</span>
