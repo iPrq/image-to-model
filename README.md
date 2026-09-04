@@ -4,7 +4,6 @@
 [![React](https://img.shields.io/badge/React-19.2.8-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-1.2.11-FF6F00?style=flat-square&logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
-[![Google Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Hunyuan3D-2](https://img.shields.io/badge/Inference-Hunyuan3D--2-0052D9?style=flat-square)](https://huggingface.co/spaces/tencent/Hunyuan3D-2)
 [![Trimesh](https://img.shields.io/badge/Geometry-Trimesh_5.1+-blue?style=flat-square)](https://trimesh.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
