@@ -1,6 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Header from "./components/Header";
+
+// Google model-viewer element in React 19
+const ModelViewer = "model-viewer" as unknown as React.ElementType;
 
 export default function HomePage() {
   return (
@@ -8,7 +13,7 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1 flex flex-col">
-        {/* Full-Screen Video Hero Section — Down-Left */}
+        {/* Full-Screen Video Hero Section — Clean Down-Left Minimalist */}
         <section className="relative w-full h-screen h-[100dvh] flex flex-col justify-end overflow-hidden border-b border-[#222226] bg-black px-8 sm:px-16 lg:px-24 pb-16 sm:pb-24">
           {/* Full-Screen Background Video */}
           <video
@@ -17,16 +22,16 @@ export default function HomePage() {
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-80"
+            className="absolute inset-0 w-full h-full object-cover opacity-75"
           />
 
           {/* Dark Contrast Overlays for Crisp Down-Left Readability */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-black/75 via-transparent to-transparent" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-black/85 via-black/20 to-transparent" />
 
-          {/* Hero Content — Down Left with Sharpened Font & Subtext */}
+          {/* Hero Content — Down Left with Pure Typography */}
           <div className="relative z-10 max-w-3xl flex flex-col items-start text-left space-y-6">
-            <h1 className="font-sharp text-5xl sm:text-7xl lg:text-[88px] font-semibold tracking-tighter leading-[0.98] text-white">
+            <h1 className="font-sharp text-5xl sm:text-7xl lg:text-[88px] font-semibold tracking-tighter leading-[0.96] text-white">
               Image to<br />
               Model<br />
               in Seconds
@@ -34,7 +39,7 @@ export default function HomePage() {
 
             {/* Subtext under hero headline */}
             <div className="max-w-lg text-zinc-300 text-sm sm:text-base leading-relaxed">
-              Transform single 2D images into production-ready 3D models with watertight topology, automated subject isolation, and direct GLB export.
+              Convert 2D reference images into production-ready 3D assets. Automatic background isolation, 360° depth inference, and watertight topology ready for games, AR, and 3D scenes.
             </div>
 
             <div className="pt-2">
@@ -42,14 +47,14 @@ export default function HomePage() {
                 href="/create"
                 className="bg-white text-black text-sm font-medium px-8 py-3.5 hover:bg-zinc-200 transition-all inline-flex items-center gap-2 active:scale-[0.98]"
               >
-                <span>Try Now</span>
+                <span>Generate 3D Model</span>
                 <span>→</span>
               </Link>
             </div>
           </div>
         </section>
 
-        {/* Vertical Section 1: Subject Isolation */}
+        {/* Vertical Section 1: Subject Isolation with Redesigned High-Tech Split Scanner */}
         <section className="border-b border-[#222226] bg-black py-20 sm:py-28 px-8 sm:px-16 lg:px-24">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="space-y-6">
@@ -57,66 +62,173 @@ export default function HomePage() {
                 Automatic Subject Isolation
               </h2>
               <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
-                Upload any photograph or rendering against complex backgrounds. The pipeline automatically segments the subject, removes background clutter, and normalizes the geometry onto an aligned square canvas.
+                Upload any photograph or concept sketch regardless of background complexity. Our pipeline segments the subject with sub-pixel alpha masking, eliminates background noise, and centers the asset on a normalized 1024x1024 canvas.
               </p>
             </div>
-            <div className="border border-[#222226] bg-[#09090b] p-8 sm:p-12 flex items-center justify-center min-h-[300px]">
-              <div className="relative w-48 h-48 border border-dashed border-zinc-700 flex items-center justify-center">
-                <div className="w-28 h-28 border border-white flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white" />
+
+            {/* Redesigned Graphic 1: High-Tech Alpha Segmentation Viewport */}
+            <div className="border border-[#222226] bg-[#09090b] p-6 sm:p-8 flex items-center justify-center min-h-[360px] relative overflow-hidden">
+              <div className="relative w-full max-w-sm h-72 border border-[#27272a] bg-black overflow-hidden flex items-center justify-center">
+                {/* Left Side: Background Clutter Noise */}
+                <div className="absolute inset-y-0 left-0 w-1/2 bg-[#0d0d10] border-r border-white/20 overflow-hidden flex items-center justify-center">
+                  {/* Clutter grid lines */}
+                  <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#71717a_1px,transparent_1px)] [background-size:12px_12px]" />
+                  <div className="w-24 h-24 border border-dashed border-zinc-700 opacity-40 rotate-12 absolute -top-4 -left-4" />
+                  <div className="w-16 h-16 border border-zinc-800 opacity-50 absolute bottom-2 left-4" />
+                  <div className="absolute top-2 left-2 font-mono text-[9px] text-zinc-600">INPUT RAW</div>
                 </div>
-                <div className="absolute top-2 left-2 font-mono text-[10px] text-zinc-500">ISOLATE</div>
-                <div className="absolute bottom-2 right-2 font-mono text-[10px] text-zinc-500">BOUNDS // 1:1</div>
+
+                {/* Right Side: Clean Transparency Grid */}
+                <div className="absolute inset-y-0 right-0 w-1/2 bg-[#050507] overflow-hidden">
+                  <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#3f3f46_1px,transparent_1px),linear-gradient(to_bottom,#3f3f46_1px,transparent_1px)] bg-[size:16px_16px]" />
+                  <div className="absolute top-2 right-2 font-mono text-[9px] text-zinc-400">ALPHA 100%</div>
+                </div>
+
+                {/* Center Isolated Subject Silhouette & Precision Bounding Calipers */}
+                <div className="relative z-10 flex items-center justify-center">
+                  {/* Bounding Box Frame */}
+                  <div className="w-44 h-44 border border-white/40 relative flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                    {/* Corner Calipers */}
+                    <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-white" />
+                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-white" />
+                    <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-white" />
+                    <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-white" />
+
+                    {/* High-Precision 3D Geometric Subject Icon */}
+                    <svg viewBox="0 0 100 100" className="w-28 h-28 stroke-white fill-none stroke-[1.2]">
+                      <circle cx="50" cy="50" r="34" strokeDasharray="3 3" stroke="#71717a" />
+                      <polygon points="50,20 80,45 68,80 32,80 20,45" className="stroke-white stroke-[1.5]" />
+                      <line x1="50" y1="20" x2="50" y2="80" stroke="#a1a1aa" strokeWidth="0.8" />
+                      <line x1="20" y1="45" x2="80" y2="45" stroke="#a1a1aa" strokeWidth="0.8" />
+                      <circle cx="50" cy="50" r="3" className="fill-white" />
+                    </svg>
+
+                    {/* Laser Scanning Beam */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      <div className="w-full h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] absolute animate-scan-beam" />
+                    </div>
+
+                    {/* Coordinate Indicators */}
+                    <div className="absolute -bottom-5 left-0 right-0 flex justify-between font-mono text-[8px] text-zinc-500 px-1">
+                      <span>W: 1024 PX</span>
+                      <span>H: 1024 PX</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Vertical Section 2: Watertight 3D Reconstruction */}
+        {/* Vertical Section 2: Watertight 3D Reconstruction with Redesigned Volumetric Depth Grid */}
         <section className="border-b border-[#222226] bg-black py-20 sm:py-28 px-8 sm:px-16 lg:px-24">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="border border-[#222226] bg-[#09090b] p-8 sm:p-12 flex items-center justify-center min-h-[300px] order-2 lg:order-1">
-              <div className="w-48 h-48 flex items-center justify-center">
-                <svg viewBox="0 0 100 100" className="w-36 h-36 stroke-white fill-none stroke-[1.2]">
-                  <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" />
-                  <line x1="50" y1="10" x2="50" y2="50" />
-                  <line x1="50" y1="50" x2="90" y2="70" />
-                  <line x1="50" y1="50" x2="10" y2="70" />
-                  <line x1="50" y1="50" x2="50" y2="90" strokeDasharray="2 2" stroke="#71717a" />
-                </svg>
+            {/* Redesigned Graphic 2: 360° Volumetric Wireframe & Depth Projection */}
+            <div className="border border-[#222226] bg-[#09090b] p-6 sm:p-8 flex items-center justify-center min-h-[360px] order-2 lg:order-1 relative overflow-hidden">
+              <div className="relative w-full max-w-sm h-72 border border-[#27272a] bg-black flex items-center justify-center overflow-hidden">
+                {/* Background Isometric Grid */}
+                <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#3f3f46_1px,transparent_1px),linear-gradient(to_bottom,#3f3f46_1px,transparent_1px)] bg-[size:20px_20px]" />
+
+                {/* 360° Volumetric Wireframe Geometry */}
+                <div className="relative z-10 w-48 h-48 flex items-center justify-center">
+                  <svg viewBox="0 0 200 200" className="w-full h-full stroke-white fill-none">
+                    {/* Front Face Hexagon */}
+                    <polygon points="100,25 165,60 165,135 100,175 35,135 35,60" strokeWidth="1.6" className="stroke-white" />
+
+                    {/* Isometric Internal Spatial Lattice */}
+                    <line x1="100" y1="25" x2="100" y2="100" strokeWidth="1.2" className="stroke-zinc-300" />
+                    <line x1="165" y1="60" x2="100" y2="100" strokeWidth="1.2" className="stroke-zinc-300" />
+                    <line x1="35" y1="60" x2="100" y2="100" strokeWidth="1.2" className="stroke-zinc-300" />
+                    <line x1="100" y1="100" x2="100" y2="175" strokeWidth="1.4" className="stroke-white" />
+                    <line x1="100" y1="100" x2="165" y2="135" strokeWidth="1.4" className="stroke-white" />
+                    <line x1="100" y1="100" x2="35" y2="135" strokeWidth="1.4" className="stroke-white" />
+
+                    {/* Synthesized Back-Face Ray Projections (Dashed) */}
+                    <line x1="100" y1="25" x2="140" y2="45" stroke="#71717a" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="100" y1="175" x2="140" y2="155" stroke="#71717a" strokeWidth="1" strokeDasharray="3 3" />
+                    <line x1="35" y1="135" x2="75" y2="155" stroke="#71717a" strokeWidth="1" strokeDasharray="3 3" />
+                    <polygon points="100,50 145,75 145,125 100,150 55,125 55,75" stroke="#52525b" strokeWidth="1" strokeDasharray="2 2" />
+
+                    {/* Key Vertices Dots */}
+                    <circle cx="100" cy="25" r="3" className="fill-white" />
+                    <circle cx="165" cy="60" r="3" className="fill-white" />
+                    <circle cx="165" cy="135" r="3" className="fill-white" />
+                    <circle cx="100" cy="175" r="3" className="fill-white" />
+                    <circle cx="35" cy="135" r="3" className="fill-white" />
+                    <circle cx="35" cy="60" r="3" className="fill-white" />
+                    <circle cx="100" cy="100" r="3.5" className="fill-white" />
+                  </svg>
+                </div>
+
+                {/* Corner Telemetry Labels */}
+                <div className="absolute top-2 left-2 font-mono text-[9px] text-zinc-500">
+                  AXIS: [X, Y, Z]
+                </div>
+                <div className="absolute bottom-2 right-2 font-mono text-[9px] text-zinc-400">
+                  360° DEPTH FIELD
+                </div>
               </div>
             </div>
+
             <div className="space-y-6 order-1 lg:order-2">
               <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
                 Complete 360° Reconstruction
               </h2>
               <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
-                Rather than producing a flat relief, the system calculates true spatial depth and infers unobserved rear faces, synthesizing a continuous watertight polygonal mesh with clean topology and validated surface normals.
+                Rather than generating a shallow 2.5D relief, the model calculates full spatial depth and predicts unseen back-face geometry, producing a continuous watertight mesh with clean manifold topology and validated normals.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Vertical Section 3: Native GLB Export */}
+        {/* Vertical Section 3: Our Story & Our Vision with Interactive 3D Model */}
         <section className="border-b border-[#222226] bg-black py-20 sm:py-28 px-8 sm:px-16 lg:px-24">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
-                Direct Pipeline Export
-              </h2>
-              <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
-                Output standard glTF 2.0 binary (.GLB) files ready for immediate drag-and-drop into Blender, Unreal Engine, Unity, Three.js, or CAD visualization tools without manual mesh repair or cleanup.
-              </p>
-            </div>
-            <div className="border border-[#222226] bg-[#09090b] p-8 sm:p-12 flex flex-col justify-center space-y-4 min-h-[300px]">
-              <div className="font-mono text-xs text-zinc-400 pb-2 border-b border-[#27272a]">
-                PIPELINE COMPATIBILITY
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            {/* Left: Stacked Story & Vision Cards */}
+            <div className="flex flex-col justify-between gap-6">
+              {/* Our Story Card */}
+              <div className="border border-[#222226] bg-[#09090b] p-8 sm:p-10 space-y-4 flex-1 flex flex-col justify-center">
+                <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+                  Our Story
+                </h3>
+                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                  3D asset creation has always been bottlenecked by manual poly modeling, retopology, and endless tweaking. We built Core3D to make 3D creation as direct and accessible as generating an image—enabling creators, game developers, and artists to turn concept art into production-ready 3D meshes in seconds.
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-xs text-zinc-300">
-                <div className="border border-[#27272a] p-3">Blender 3D</div>
-                <div className="border border-[#27272a] p-3">Unreal Engine</div>
-                <div className="border border-[#27272a] p-3">Unity</div>
-                <div className="border border-[#27272a] p-3">Three.js / WebGL</div>
+
+              {/* Our Vision Card */}
+              <div className="border border-[#222226] bg-[#09090b] p-8 sm:p-10 space-y-4 flex-1 flex flex-col justify-center">
+                <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+                  Our Vision
+                </h3>
+                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                  To make spatial 3D generation instant, watertight, and universally compatible. Whether you are prototyping indie games, designing spatial experiences, or rendering digital products, Core3D removes the friction between imagination and interactive 3D assets.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Clean Interactive 3D Model Display Card */}
+            <div className="border border-[#222226] bg-[#09090b] relative flex flex-col justify-between overflow-hidden min-h-[460px] p-6 sm:p-8">
+              {/* 3D Model Viewer Canvas */}
+              <div className="relative flex-1 w-full h-full min-h-[360px] flex items-center justify-center my-auto">
+                <ModelViewer
+                  src="/model_e2f74830.glb"
+                  alt="3D Asset Preview"
+                  auto-rotate="true"
+                  camera-controls="true"
+                  shadow-intensity="0.8"
+                  shadow-softness="0.8"
+                  environment-image="neutral"
+                  exposure="0.9"
+                  style={{ width: "100%", height: "100%", minHeight: "360px" }}
+                />
+              </div>
+
+              {/* Subtle Indicator Dots */}
+              <div className="flex items-center justify-center gap-2 pt-2 z-10">
+                <span className="w-5 h-1 bg-white rounded-full" />
+                <span className="w-1.5 h-1 bg-zinc-700 rounded-full" />
+                <span className="w-1.5 h-1 bg-zinc-700 rounded-full" />
               </div>
             </div>
           </div>

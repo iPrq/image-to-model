@@ -10,6 +10,8 @@ declare global {
           "auto-rotate"?: boolean | string;
           "camera-controls"?: boolean | string;
           "shadow-intensity"?: string | number;
+          "shadow-softness"?: string | number;
+          "tone-mapping"?: string;
           exposure?: string | number;
           "interaction-prompt"?: string;
           "environment-image"?: string;
@@ -34,6 +36,8 @@ declare global {
             "auto-rotate"?: boolean | string;
             "camera-controls"?: boolean | string;
             "shadow-intensity"?: string | number;
+            "shadow-softness"?: string | number;
+            "tone-mapping"?: string;
             exposure?: string | number;
             "interaction-prompt"?: string;
             "environment-image"?: string;
