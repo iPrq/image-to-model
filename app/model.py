@@ -30,10 +30,9 @@ if HF_TOKEN:
     HF_TOKEN = HF_TOKEN.strip()
 HF_SPACE_ID = os.getenv("HF_SPACE_ID", "tencent/Hunyuan3D-2").strip()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if GOOGLE_API_KEY:
-    GOOGLE_API_KEY = GOOGLE_API_KEY.strip()
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
+
+llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", api_key=GOOGLE_API_KEY)
 
 
 class MeshState(TypedDict):
