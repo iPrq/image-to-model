@@ -22,10 +22,26 @@ const COLOR_PRESETS: ColorPreset[] = [
   { name: "Soft Clay", hex: "#d4d4d8", rgb: [0.83, 0.83, 0.85] },
 ];
 
+function cleanPromptText(raw: string): string {
+  if (!raw) return "";
+  let text = raw.trim();
+
+  // If it's a stringified python list or dict like [{'type': 'text', 'text': '...'}]
+  if (text.includes("'text':") || text.includes('"text":')) {
+    const match = text.match(/['"]text['"]\s*:\s*['"]([\s\S]*?)(?:['"],\s*['"]extras|['"]\s*\}|['"]\s*\]|['"]$)/);
+    if (match && match[1]) {
+      return match[1].replace(/\\n/g, " ").trim();
+    }
+  }
+
+  return text.replace(/^["'\[\{]+|["'\]\}]+$/g, "").trim();
+}
+
 export default function InspectPage() {
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [modelSize, setModelSize] = useState<number>(0);
   const [modelId, setModelId] = useState<string>("");
+  const [modelPrompt, setModelPrompt] = useState<string>("");
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -85,6 +101,10 @@ export default function InspectPage() {
     async function loadModel() {
       const storedId = sessionStorage.getItem("active_model_id");
       const storedSize = sessionStorage.getItem("active_model_size");
+      const storedPrompt = sessionStorage.getItem("active_model_prompt");
+      if (storedPrompt) {
+        setModelPrompt(cleanPromptText(storedPrompt));
+      }
 
       // Check IndexedDB first for reload resilience
       const idbBlob = await getModelBlob("latest_model");
@@ -110,6 +130,7 @@ export default function InspectPage() {
       setModelUrl("/hero-model.glb");
       setModelSize(3773916);
       setModelId("HERO_SPEC");
+      setModelPrompt("Titanium futuristic combat mecha with high-density surface geometry and watertight topology.");
     }
 
     loadModel();
@@ -394,6 +415,19 @@ export default function InspectPage() {
                   className="w-full h-1 bg-zinc-800 rounded-none appearance-none cursor-pointer accent-white"
                 />
               </div>
+
+              {/* 5. Google Generated / Enhanced Prompt */}
+              {modelPrompt && (
+                <div className="space-y-2 pt-3 border-t border-[#27272a]">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-zinc-300 font-medium">Reconstruction Prompt</span>
+                    <span className="text-[10px] font-mono text-zinc-500">Google Gemini</span>
+                  </div>
+                  <div className="text-xs text-zinc-300 bg-black/60 border border-zinc-800 p-3 leading-relaxed font-mono select-text italic">
+                    &ldquo;{modelPrompt}&rdquo;
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Bottom Details */}

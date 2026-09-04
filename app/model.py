@@ -84,7 +84,24 @@ def generate_transient_caption(image_path: str, user_prompt: Optional[str] = Non
                 }
             ])
         ])
-        caption = str(response.content).strip().strip('"').strip("'")
+        raw_content = response.content
+        caption = ""
+        if isinstance(raw_content, str):
+            caption = raw_content
+        elif isinstance(raw_content, list):
+            parts = []
+            for part in raw_content:
+                if isinstance(part, str):
+                    parts.append(part)
+                elif isinstance(part, dict) and "text" in part:
+                    parts.append(str(part["text"]))
+                elif hasattr(part, "text"):
+                    parts.append(str(part.text))
+            caption = " ".join(parts)
+        elif isinstance(raw_content, dict) and "text" in raw_content:
+            caption = str(raw_content["text"])
+
+        caption = caption.strip().strip('"').strip("'")
         if caption:
             return caption
     except Exception as e:

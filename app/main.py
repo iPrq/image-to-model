@@ -1,5 +1,6 @@
 import os
 import uuid
+import urllib.parse
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import FileResponse
@@ -14,7 +15,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Job-ID", "Content-Disposition"],
+    expose_headers=["X-Job-ID", "X-Enhanced-Prompt", "Content-Disposition"],
 )
 
 
@@ -80,6 +81,9 @@ def generate_mesh(
     if not final_path or not os.path.exists(final_path):
         raise HTTPException(status_code=500, detail="Failed to generate 3D model: output GLB missing.")
 
+    enhanced_prompt = state.get("enhanced_prompt") or ""
+    encoded_prompt = urllib.parse.quote(enhanced_prompt)
+
     # Return the generated .glb file directly
     return FileResponse(
         path=final_path,
@@ -87,7 +91,8 @@ def generate_mesh(
         filename=f"{job_id}.glb",
         headers={
             "X-Job-ID": job_id,
-            "Access-Control-Expose-Headers": "X-Job-ID, Content-Disposition",
+            "X-Enhanced-Prompt": encoded_prompt,
+            "Access-Control-Expose-Headers": "X-Job-ID, X-Enhanced-Prompt, Content-Disposition",
         },
     )
 
